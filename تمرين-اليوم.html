@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#fb923c" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="تمرين اليوم" />
+<title>تمرين اليوم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔥%3C/text%3E%3C/svg%3E" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  * { font-family: 'Tajawal', system-ui, sans-serif; }
+  body { margin: 0; -webkit-tap-highlight-color: transparent; }
+  @keyframes blob { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.95); } }
+  @keyframes blob-slow { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-40px, 30px) scale(1.05); } }
+  @keyframes blob-slower { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(50px, -30px) scale(1.1); } }
+  .animate-blob { animation: blob 18s ease-in-out infinite; }
+  .animate-blob-slow { animation: blob-slow 22s ease-in-out infinite; }
+  .animate-blob-slower { animation: blob-slower 26s ease-in-out infinite; }
+  @keyframes float-up { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; } }
+  @keyframes pulse-soft { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+  .pulse-soft { animation: pulse-soft 3s ease-in-out infinite; }
+  @keyframes wiggle { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+  .hover-wiggle:hover { animation: wiggle 0.4s ease-in-out; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+const Icon = ({ name, ...props }) => {
+  const ref = React.useRef();
+  React.useEffect(() => {
+    if (ref.current) {
+      ref.current.innerHTML = '';
+      const el = document.createElement('i');
+      el.setAttribute('data-lucide', name);
+      ref.current.appendChild(el);
+      window.lucide.createIcons();
+    }
+  }, [name]);
+  return <span ref={ref} style={{ display: 'inline-flex', ...props.style }} className={props.className} />;
+};
+
+const WORKOUT_PLAN = {
+  upper1: {
+    name: "علوي A", code: "UA", duration: "90 دقيقة",
+    accent: "#fb923c", accentDark: "#ea580c", accentLight: "#fed7aa", accentSoft: "#fff7ed",
+    gradient: "from-amber-300 via-orange-400 to-pink-400",
+    glow: "rgba(251, 146, 60, 0.35)", pattern: "sun", icon: "💪",
+    cardio: { type: "مشي سريع", duration: "20 دقيقة", icon: "footprints" },
+    exercises: [
+      { id: "u1-1", name: "جهاز ضغط الصدر", machine: "Chest Press Machine", sets: 3, reps: "8–10", notes: "ثبّت الظهر على المقعد، نفس منتظم", video: "https://www.youtube.com/results?search_query=chest+press+machine+form+short" },
+      { id: "u1-2", name: "جهاز السحب العلوي", machine: "Lat Pulldown", sets: 3, reps: "10", notes: "اسحب لين الصدر، ركّز على عضلات الظهر", video: "https://www.youtube.com/results?search_query=lat+pulldown+proper+form+short" },
+      { id: "u1-3", name: "جهاز ضغط الكتف", machine: "Shoulder Press Machine", sets: 3, reps: "8–10", notes: "لا تقفل المرفق فوق، حركة كاملة", video: "https://www.youtube.com/results?search_query=shoulder+press+machine+form+short" },
+      { id: "u1-4", name: "جهاز السحب جالس", machine: "Seated Row Machine", sets: 3, reps: "10", notes: "اسحب للبطن، اعصر الظهر", video: "https://www.youtube.com/results?search_query=seated+row+machine+form+short" },
+      { id: "u1-5", name: "جهاز بايسبس", machine: "Biceps Curl Machine", sets: 2, reps: "10", notes: "ثبّت المرفق، بدون أرجحة", video: "https://www.youtube.com/results?search_query=biceps+curl+machine+form+short" },
+      { id: "u1-6", name: "كيبل ترايسبس", machine: "Triceps Pushdown", sets: 2, reps: "10", notes: "ثبّت المرفق جنب الجسم، دفع كامل", video: "https://www.youtube.com/results?search_query=triceps+pushdown+form+short" },
+    ],
+  },
+  lower1: {
+    name: "سفلي A", code: "LA", duration: "90 دقيقة",
+    accent: "#34d399", accentDark: "#059669", accentLight: "#a7f3d0", accentSoft: "#ecfdf5",
+    gradient: "from-lime-300 via-emerald-400 to-teal-400",
+    glow: "rgba(52, 211, 153, 0.35)", pattern: "leaves", icon: "🦵",
+    cardio: { type: "مشي بميل", duration: "20 دقيقة", icon: "footprints" },
+    exercises: [
+      { id: "l1-1", name: "جهاز الدفع بالأرجل", machine: "Leg Press", sets: 3, reps: "10", notes: "القدم بعرض الكتف، لا تقفل الركبة فوق", video: "https://www.youtube.com/results?search_query=leg+press+proper+form+short" },
+      { id: "l1-2", name: "جهاز الهاك سكوات", machine: "Hack Squat Machine", sets: 3, reps: "8", notes: "نزول بطيء حتى 90°، رفع بقوة", video: "https://www.youtube.com/results?search_query=hack+squat+machine+form+short" },
+      { id: "l1-3", name: "جهاز تمديد الفخذ الأمامي", machine: "Leg Extension", sets: 3, reps: "12", notes: "ثبّت في أعلى نقطة ثانية", video: "https://www.youtube.com/results?search_query=leg+extension+machine+form+short" },
+      { id: "l1-4", name: "جهاز الفخذ الخلفي جالس", machine: "Seated Leg Curl", sets: 3, reps: "12", notes: "حركة كاملة بدون استعجال", video: "https://www.youtube.com/results?search_query=seated+leg+curl+machine+form+short" },
+      { id: "l1-5", name: "جهاز السمانة", machine: "Calf Raise Machine", sets: 3, reps: "12–15", notes: "ارفع لين أعلى نقطة وثبّت", video: "https://www.youtube.com/results?search_query=calf+raise+machine+form+short" },
+    ],
+  },
+  upper2: {
+    name: "علوي B", code: "UB", duration: "90 دقيقة",
+    accent: "#60a5fa", accentDark: "#2563eb", accentLight: "#bfdbfe", accentSoft: "#eff6ff",
+    gradient: "from-sky-300 via-blue-400 to-indigo-400",
+    glow: "rgba(96, 165, 250, 0.35)", pattern: "circles", icon: "🏋️",
+    cardio: { type: "HIIT", duration: "15 دقيقة", icon: "wind" },
+    exercises: [
+      { id: "u2-1", name: "جهاز ضغط صدر مائل", machine: "Incline Chest Press", sets: 3, reps: "10", notes: "زاوية المقعد للأعلى، تركيز على الصدر العلوي", video: "https://www.youtube.com/results?search_query=incline+chest+press+machine+form+short" },
+      { id: "u2-2", name: "جهاز العقلة المساعدة", machine: "Assisted Pull-Up", sets: 3, reps: "8–10", notes: "اسحب جسمك بعضلات الظهر، حركة كاملة", video: "https://www.youtube.com/results?search_query=assisted+pull+up+machine+form+short" },
+      { id: "u2-3", name: "جهاز رفرفة جانبية", machine: "Lateral Raise Machine", sets: 3, reps: "12", notes: "ارفع لين مستوى الكتف، بدون أرجحة", video: "https://www.youtube.com/results?search_query=lateral+raise+machine+shorts" },
+      { id: "u2-4", name: "جهاز الكتف الخلفي", machine: "Rear Delt Machine", sets: 3, reps: "12", notes: "اسحب الذراعين للخلف، اعصر الكتف الخلفي", video: "https://www.youtube.com/results?search_query=rear+delt+machine+form+short" },
+      { id: "u2-5", name: "جهاز بايسبس", machine: "Biceps Curl Machine", sets: 2, reps: "10", notes: "ثبّت المرفق، نزول مُتحكم", video: "https://www.youtube.com/results?search_query=biceps+curl+machine+shorts" },
+      { id: "u2-6", name: "جهاز ترايسبس", machine: "Triceps Machine", sets: 2, reps: "10", notes: "حركة بطيئة في النزول", video: "https://www.youtube.com/results?search_query=triceps+machine+shorts" },
+    ],
+  },
+  lower2: {
+    name: "سفلي B", code: "LB", duration: "90 دقيقة",
+    accent: "#c084fc", accentDark: "#9333ea", accentLight: "#e9d5ff", accentSoft: "#faf5ff",
+    gradient: "from-violet-300 via-purple-400 to-pink-400",
+    glow: "rgba(192, 132, 252, 0.35)", pattern: "blossom", icon: "🔥",
+    cardio: { type: "HIIT", duration: "15 دقيقة", icon: "wind" },
+    exercises: [
+      { id: "l2-1", name: "جهاز السكوات سميث", machine: "Smith Machine Squat", sets: 3, reps: "8", notes: "الركبة باتجاه الأصابع، الظهر مستقيم", video: "https://www.youtube.com/results?search_query=smith+machine+squat+form+short" },
+      { id: "l2-2", name: "جهاز الفخذ الخلفي نايم", machine: "Lying Leg Curl", sets: 3, reps: "12", notes: "حركة كاملة، ثبّت الورك على الجهاز", video: "https://www.youtube.com/results?search_query=lying+leg+curl+machine+form+short" },
+      { id: "l2-3", name: "جهاز الدفع الخلفي", machine: "Hip Thrust Machine", sets: 3, reps: "10", notes: "اعصر المؤخرة في الأعلى، ثبّت ثانية", video: "https://www.youtube.com/results?search_query=hip+thrust+machine+form+short" },
+      { id: "l2-4", name: "جهاز المؤخرة", machine: "Glute Kickback", sets: 2, reps: "12", notes: "حركة مُتحكمة، ركّز على الانقباض", video: "https://www.youtube.com/results?search_query=glute+kickback+machine+form+short" },
+      { id: "l2-5", name: "جهاز السمانة", machine: "Calf Raise Machine", sets: 3, reps: "12–15", notes: "ارفع لين أعلى نقطة وثبّت", video: "https://www.youtube.com/results?search_query=calf+raise+machine+form+short" },
+    ],
+  },
+  rest: {
+    name: "راحة", code: "RT", duration: "—",
+    accent: "#94a3b8", accentDark: "#64748b", accentLight: "#e2e8f0", accentSoft: "#f8fafc",
+    gradient: "from-slate-300 via-slate-400 to-slate-500",
+    glow: "rgba(148, 163, 184, 0.3)", pattern: "circles", icon: "😴",
+    cardio: null, exercises: [],
+  },
+};
+
+const DEFAULT_SCHEDULE = { 0: "upper1", 1: "lower1", 2: "rest", 3: "upper2", 4: "lower2", 5: "rest", 6: "rest" };
+const DAY_NAMES = { 0: "الأحد", 1: "الاثنين", 2: "الثلاثاء", 3: "الأربعاء", 4: "الخميس", 5: "الجمعة", 6: "السبت" };
+const ALL_WORKOUT_KEYS = ["upper1", "lower1", "upper2", "lower2", "rest"];
+
+const MOTIVATIONAL_QUOTES = {
+  upper1: [
+    { text: "القوة لا تأتي من القدرة الجسدية، بل من إرادة لا تنكسر", author: "محمد علي" },
+    { text: "كل تمرين تتعب فيه اليوم، يصبح وزناً خفيفاً غداً", author: "" },
+    { text: "اضغط على البار كأنه عدوّك، وارفعه كأنه نصرك", author: "" },
+    { text: "الألم وقتي، الفخر دائم", author: "" },
+  ],
+  lower1: [
+    { text: "الأقوياء لا يهربون من يوم الأرجل", author: "" },
+    { text: "السكوات اليوم، السرعة غداً، النصر دائماً", author: "" },
+    { text: "العمالقة بُنوا من الأسفل للأعلى", author: "" },
+    { text: "أرجلك تحملك في الحياة كلها، اعتنِ بها", author: "" },
+  ],
+  upper2: [
+    { text: "الظهر القوي يحمل أحلامك الكبيرة", author: "" },
+    { text: "كل سحبة تقربك خطوة من نسختك الأقوى", author: "" },
+    { text: "النجاح مثل الديدليفت — كله في الإحماء الصح والتنفيذ القوي", author: "" },
+    { text: "اصنع جسمك كما تصنع شخصيتك: بصبر وثبات", author: "" },
+  ],
+  lower2: [
+    { text: "التوازن في الجسم يصنع التوازن في الحياة", author: "" },
+    { text: "آخر تكرار هو اللي يبني نسختك الجديدة", author: "" },
+    { text: "كن أقوى من أعذارك", author: "" },
+    { text: "الانضباط هو الجسر بين أهدافك وإنجازاتك", author: "جيم رون" },
+  ],
+  rest: [
+    { text: "الراحة ليست ضعفاً، الراحة ذكاء", author: "" },
+    { text: "العضلات تنمو في الراحة، لا في الصالة", author: "" },
+    { text: "اسمع جسمك، هو يكلمك", author: "" },
+    { text: "غداً يوم جديد لتكون أقوى", author: "" },
+  ],
+};
+
+const TIPS = [
+  { icon: "⏱️", title: "الراحة بين الجولات", text: "60–90 ثانية" },
+  { icon: "🔥", title: "آخر عدتين", text: "لازم تكون صعبة" },
+  { icon: "🎯", title: "الأولوية دائماً", text: "الحركة الصح قبل الوزن" },
+  { icon: "🧘", title: "نهاية التمرين", text: "5–10 دقائق إطالة" },
+];
+
+const WATER_GOAL = 8;
+const SCHEDULE_KEY = "tamreen_custom_schedule_v1";
+
+const todayDate = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+};
+
+function App() {
+  const today = useMemo(() => new Date(), []);
+  const todayDayNum = today.getDay();
+
+  const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
+  const [viewedDay, setViewedDay] = useState(todayDayNum);
+  const [completed, setCompleted] = useState({});
+  const [cardioDone, setCardioDone] = useState({});
+  const [water, setWater] = useState(0);
+  const [page, setPage] = useState("home");
+  const [confettiTrigger, setConfettiTrigger] = useState(0);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SCHEDULE_KEY);
+      if (saved) setSchedule({ ...DEFAULT_SCHEDULE, ...JSON.parse(saved) });
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); } catch (_) {}
+  }, [schedule]);
+
+  const viewedKey = schedule[viewedDay] || "rest";
+  const workout = WORKOUT_PLAN[viewedKey];
+  const isViewingToday = viewedDay === todayDayNum;
+  const isViewingRest = viewedKey === "rest";
+
+  const dailyQuote = useMemo(() => {
+    const quotes = MOTIVATIONAL_QUOTES[viewedKey] || MOTIVATIONAL_QUOTES.upper1;
+    const seed = `${todayDate()}_${viewedKey}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) hash = (hash + seed.charCodeAt(i)) % 1000;
+    return quotes[hash % quotes.length];
+  }, [viewedKey]);
+
+  const STORAGE_DONE = `tamreen_done_${todayDate()}_${viewedDay}`;
+  const STORAGE_CARDIO = `tamreen_cardio_${todayDate()}_${viewedDay}`;
+  const STORAGE_WATER = `tamreen_water_${todayDate()}`;
+
+  useEffect(() => {
+    try {
+      const d = localStorage.getItem(STORAGE_DONE);
+      const c = localStorage.getItem(STORAGE_CARDIO);
+      setCompleted(d ? JSON.parse(d) : {});
+      setCardioDone(c ? JSON.parse(c) : {});
+    } catch (_) { setCompleted({}); setCardioDone({}); }
+  }, [viewedDay]);
+
+  useEffect(() => {
+    try {
+      const w = localStorage.getItem(STORAGE_WATER);
+      if (w) setWater(parseInt(w, 10) || 0);
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => { try { localStorage.setItem(STORAGE_DONE, JSON.stringify(completed)); } catch (_) {} }, [completed]);
+  useEffect(() => { try { localStorage.setItem(STORAGE_CARDIO, JSON.stringify(cardioDone)); } catch (_) {} }, [cardioDone]);
+  useEffect(() => { try { localStorage.setItem(STORAGE_WATER, String(water)); } catch (_) {} }, [water]);
+
+  const totalItems = workout.exercises.length + (workout.cardio ? 1 : 0);
+  const exDoneCount = workout.exercises.filter((e) => completed[e.id]).length;
+  const cDone = !!cardioDone[viewedDay];
+  const doneCount = exDoneCount + (cDone && workout.cardio ? 1 : 0);
+  const progress = totalItems ? (doneCount / totalItems) * 100 : 0;
+  const allDone = totalItems > 0 && doneCount === totalItems;
+
+  const toggleDone = (id) => {
+    const wasNotDone = !completed[id];
+    setCompleted((prev) => ({ ...prev, [id]: !prev[id] }));
+    if (wasNotDone) {
+      const newDone = exDoneCount + 1 + (cDone && workout.cardio ? 1 : 0);
+      if (newDone === totalItems) setConfettiTrigger((t) => t + 1);
+    }
+  };
+
+  const toggleCardio = () => {
+    const wasNotDone = !cardioDone[viewedDay];
+    setCardioDone((prev) => ({ ...prev, [viewedDay]: !prev[viewedDay] }));
+    if (wasNotDone && exDoneCount + 1 === totalItems) setConfettiTrigger((t) => t + 1);
+  };
+
+  const goToToday = () => setViewedDay(todayDayNum);
+  const goToDay = (d) => { setViewedDay(d); setPage("home"); };
+  const swapDays = (a, b) => setSchedule((p) => ({ ...p, [a]: p[b], [b]: p[a] }));
+  const updateDay = (d, k) => setSchedule((p) => ({ ...p, [d]: k }));
+  const resetSchedule = () => setSchedule(DEFAULT_SCHEDULE);
+
+  const waterProgress = (water / WATER_GOAL) * 100;
+  const waterDone = water >= WATER_GOAL;
+  const addWater = () => setWater((w) => Math.min(WATER_GOAL + 4, w + 1));
+  const resetWater = () => setWater(0);
+  const resetWorkout = () => { setCompleted({}); setCardioDone((p) => ({ ...p, [viewedDay]: false })); };
+
+  const greeting = useMemo(() => {
+    const h = today.getHours();
+    if (h < 12) return "صباح الخير";
+    if (h < 17) return "مساء الخير";
+    return "مساء النور";
+  }, [today]);
+
+  return (
+    <div className="min-h-screen relative overflow-x-hidden text-slate-800">
+      <SkyBackground accent={workout.accent} />
+      {confettiTrigger > 0 && <Confetti key={confettiTrigger} accent={workout.accent} />}
+
+      <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 pb-32 pt-5">
+        <Header workout={workout} page={page} setPage={setPage} greeting={greeting} />
+
+        {page === "home" && (<>
+          <DaySelector schedule={schedule} viewedDay={viewedDay} setViewedDay={setViewedDay} todayDayNum={todayDayNum} isViewingToday={isViewingToday} goToToday={goToToday} />
+          <HeroBanner workout={workout} today={today} isViewingToday={isViewingToday} dayLabel={DAY_NAMES[viewedDay]} />
+          <QuoteCard quote={dailyQuote} workout={workout} />
+          {!isViewingRest && (<>
+            <StatsGrid workout={workout} doneCount={doneCount} totalItems={totalItems} />
+            <ProgressSection doneCount={doneCount} totalExercises={totalItems} progress={progress} allDone={allDone} onReset={resetWorkout} workout={workout} />
+            <ExercisesList exercises={workout.exercises} completed={completed} onToggle={toggleDone} workout={workout} />
+            {workout.cardio && <CardioCard cardio={workout.cardio} done={cDone} onToggle={toggleCardio} workout={workout} />}
+            <TipsSection />
+          </>)}
+          <WaterSection water={water} progress={waterProgress} done={waterDone} onAdd={addWater} onReset={resetWater} />
+        </>)}
+
+        {page === "week" && <WeekPage schedule={schedule} todayDayNum={todayDayNum} goToDay={goToDay} onEditClick={() => setPage("settings")} />}
+        {page === "settings" && <SettingsPage schedule={schedule} updateDay={updateDay} swapDays={swapDays} resetSchedule={resetSchedule} onBack={() => setPage("week")} />}
+
+        <Footer />
+      </div>
+
+      <MobileNav page={page} setPage={setPage} accent={workout.accent} />
+    </div>
+  );
+}
+
+function SkyBackground({ accent }) {
+  return (<>
+    <div className="absolute inset-0 -z-10 pointer-events-none transition-all duration-1000" style={{ background: "linear-gradient(180deg, #fff7ed 0%, #fef3f2 20%, #fefce8 40%, #f0fdf4 70%, #eff6ff 100%)" }} />
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute -top-32 -right-20 w-[500px] h-[500px] rounded-full blur-3xl opacity-40 animate-blob" style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 70%)` }} />
+      <div className="absolute top-40 -left-32 w-[450px] h-[450px] rounded-full blur-3xl opacity-30 animate-blob-slow" style={{ background: "radial-gradient(circle, #fbbf24 0%, transparent 70%)" }} />
+      <div className="absolute bottom-20 right-1/4 w-[400px] h-[400px] rounded-full blur-3xl opacity-25 animate-blob-slower" style={{ background: "radial-gradient(circle, #60a5fa 0%, transparent 70%)" }} />
+      <div className="absolute top-1/3 right-1/2 w-[350px] h-[350px] rounded-full blur-3xl opacity-20 animate-blob" style={{ background: "radial-gradient(circle, #f472b6 0%, transparent 70%)" }} />
+    </div>
+  </>);
+}
+
+function Confetti({ accent }) {
+  const pieces = useMemo(() => {
+    const colors = [accent, "#fbbf24", "#34d399", "#60a5fa", "#f472b6", "#c084fc"];
+    return Array.from({ length: 40 }).map((_, i) => ({
+      id: i, left: Math.random() * 100, delay: Math.random() * 0.5,
+      duration: 2 + Math.random() * 1.5, color: colors[Math.floor(Math.random() * colors.length)],
+      size: 6 + Math.random() * 8, shape: Math.random() > 0.5 ? "circle" : "square",
+    }));
+  }, [accent]);
+  return (
+    <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
+      {pieces.map((p) => (
+        <div key={p.id} className="absolute" style={{
+          left: `${p.left}%`, bottom: "0", width: `${p.size}px`, height: `${p.size}px`,
+          background: p.color, borderRadius: p.shape === "circle" ? "50%" : "2px",
+          animation: `float-up ${p.duration}s ease-out ${p.delay}s forwards`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function Header({ workout, page, setPage, greeting }) {
+  return (
+    <header className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3">
+        <div className="relative hover-wiggle">
+          <div className="absolute inset-0 blur-xl opacity-40" style={{ background: workout.accent }} />
+          <div className={`relative w-11 h-11 rounded-2xl bg-gradient-to-br ${workout.gradient} flex items-center justify-center`} style={{ boxShadow: `0 8px 24px -6px ${workout.glow}` }}>
+            <Icon name="sun" className="w-5 h-5 text-white" />
+          </div>
+        </div>
+        <div>
+          <h1 className="text-lg sm:text-xl font-black tracking-tight leading-none text-slate-900">تمرين اليوم</h1>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-[11px] text-slate-600 font-bold">{greeting} 🌅</span>
+          </div>
+        </div>
+      </div>
+      <nav className="hidden sm:flex items-center gap-1 bg-white/70 backdrop-blur-xl border border-white/60 rounded-2xl p-1 shadow-md shadow-orange-100/50">
+        <NavBtn active={page === "home"} onClick={() => setPage("home")} label="الرئيسية" />
+        <NavBtn active={page === "week" || page === "settings"} onClick={() => setPage("week")} label="الجدول" />
+      </nav>
+    </header>
+  );
+}
+
+function NavBtn({ active, onClick, label }) {
+  return (
+    <button onClick={onClick} className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${active ? "bg-slate-900 text-white shadow-md scale-[1.02]" : "text-slate-600 hover:text-slate-900 hover:bg-white/80"}`}>
+      {label}
+    </button>
+  );
+}
+
+function DaySelector({ schedule, viewedDay, setViewedDay, todayDayNum, isViewingToday, goToToday }) {
+  return (
+    <div className="mb-5">
+      <div className="flex items-center justify-between mb-2.5 px-1">
+        <div className="flex items-center gap-2">
+          <Icon name="eye" className="w-3 h-3 text-slate-500" />
+          <span className="text-[10px] text-slate-500 tracking-widest uppercase font-bold">تستعرض</span>
+        </div>
+        {!isViewingToday && (
+          <button onClick={goToToday} className="text-[10px] text-orange-600 hover:text-orange-700 font-bold flex items-center gap-1 bg-orange-100/80 hover:bg-orange-200/80 border border-orange-300/50 px-2.5 py-1 rounded-full transition-all hover:scale-105">
+            <Icon name="zap" className="w-3 h-3" />
+            ارجع لليوم
+          </button>
+        )}
+      </div>
+      <div className="bg-white/70 backdrop-blur-xl border border-white/60 rounded-2xl p-1 grid grid-cols-7 gap-0.5 shadow-md shadow-orange-100/50">
+        {[0,1,2,3,4,5,6].map((dayNum) => {
+          const wKey = schedule[dayNum]; const w = WORKOUT_PLAN[wKey];
+          const active = dayNum === viewedDay; const isToday = dayNum === todayDayNum;
+          return (
+            <button key={dayNum} onClick={() => setViewedDay(dayNum)}
+              className={`relative px-1 py-2 rounded-xl text-[10px] sm:text-xs font-bold transition-all overflow-hidden ${active ? "text-white scale-[1.05]" : "text-slate-600 hover:text-slate-900 hover:bg-white"}`}
+              style={active ? { background: `linear-gradient(135deg, ${w.accent} 0%, ${w.accentDark} 100%)`, boxShadow: `0 8px 20px -6px ${w.glow}` } : {}}>
+              {isToday && <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+              <div className="flex flex-col items-center gap-0.5 leading-tight">
+                <span className="text-[9px] opacity-80">{DAY_NAMES[dayNum].replace("ال", "")}</span>
+                <span className="text-base">{w.icon}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function HeroBanner({ workout, today, isViewingToday, dayLabel }) {
+  const dateStr = today.toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" });
+  return (
+    <section className="mb-5">
+      <div className="relative rounded-3xl overflow-hidden shadow-2xl pulse-soft" style={{ boxShadow: `0 25px 60px -20px ${workout.glow}` }}>
+        <div className={`absolute inset-0 bg-gradient-to-br ${workout.gradient}`} />
+        <PatternOverlay pattern={workout.pattern} />
+        <div className="absolute inset-0 opacity-30" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(255,255,255,0.2) 100%)" }} />
+        <div className="relative p-5 sm:p-7">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+            <div className="flex items-center gap-2 text-white text-[11px] sm:text-xs backdrop-blur-md bg-white/25 border border-white/40 rounded-full px-3 py-1.5 font-bold">
+              <Icon name="calendar" className="w-3 h-3" /><span>{dateStr}</span>
+            </div>
+            {isViewingToday ? (
+              <div className="flex items-center gap-1.5 bg-white text-slate-900 px-3 py-1.5 rounded-full text-[11px] font-black shadow-lg">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />اليوم
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 backdrop-blur-md bg-white/25 border border-white/40 text-white px-3 py-1.5 rounded-full text-[11px] font-bold">
+                <Icon name="eye" className="w-3 h-3" />معاينة
+              </div>
+            )}
+          </div>
+          <div className="flex items-end gap-3 sm:gap-4">
+            <div className="text-[72px] sm:text-[120px] font-black leading-none tracking-tighter text-white/35">{workout.code}</div>
+            <div className="pb-2 sm:pb-4">
+              <div className="text-white/90 text-[11px] sm:text-xs tracking-widest uppercase mb-1 font-bold">{dayLabel}</div>
+              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-none drop-shadow-lg">{workout.name}</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PatternOverlay({ pattern }) {
+  if (pattern === "sun") return (
+    <svg className="absolute inset-0 w-full h-full opacity-20"><defs><pattern id="sun-pat" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse"><circle cx="40" cy="40" r="8" fill="white" /><g stroke="white" strokeWidth="2" fill="none"><line x1="40" y1="20" x2="40" y2="26" /><line x1="40" y1="54" x2="40" y2="60" /><line x1="20" y1="40" x2="26" y2="40" /><line x1="54" y1="40" x2="60" y2="40" /></g></pattern></defs><rect width="100%" height="100%" fill="url(#sun-pat)" /></svg>
+  );
+  if (pattern === "leaves") return (
+    <svg className="absolute inset-0 w-full h-full opacity-25"><defs><pattern id="leaves-pat" x="0" y="0" width="70" height="70" patternUnits="userSpaceOnUse"><path d="M35 15 Q50 25, 50 40 Q50 55, 35 65 Q20 55, 20 40 Q20 25, 35 15 Z" fill="none" stroke="white" strokeWidth="1.5" /><line x1="35" y1="15" x2="35" y2="65" stroke="white" strokeWidth="1" /></pattern></defs><rect width="100%" height="100%" fill="url(#leaves-pat)" /></svg>
+  );
+  if (pattern === "circles") return (
+    <svg className="absolute inset-0 w-full h-full opacity-25"><defs><pattern id="circles-pat" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="30" cy="30" r="12" fill="none" stroke="white" strokeWidth="1.5" /><circle cx="30" cy="30" r="4" fill="white" /></pattern></defs><rect width="100%" height="100%" fill="url(#circles-pat)" /></svg>
+  );
+  if (pattern === "blossom") return (
+    <svg className="absolute inset-0 w-full h-full opacity-25"><defs><pattern id="blossom-pat" x="0" y="0" width="70" height="70" patternUnits="userSpaceOnUse"><g transform="translate(35,35)">{[0,60,120,180,240,300].map((deg) => (<ellipse key={deg} cx="0" cy="-12" rx="5" ry="9" fill="white" opacity="0.7" transform={`rotate(${deg})`} />))}<circle cx="0" cy="0" r="4" fill="white" /></g></pattern></defs><rect width="100%" height="100%" fill="url(#blossom-pat)" /></svg>
+  );
+  return null;
+}
+
+function QuoteCard({ quote, workout }) {
+  return (
+    <section className="mb-5">
+      <div className="relative rounded-2xl p-5 overflow-hidden border shadow-md hover:shadow-lg transition-shadow"
+        style={{ background: `linear-gradient(135deg, ${workout.accentSoft} 0%, white 60%, ${workout.accentSoft} 100%)`, borderColor: `${workout.accent}40` }}>
+        <Icon name="quote" className="absolute -top-2 -right-2 w-16 h-16 opacity-15" style={{ color: workout.accent }} />
+        <div className="relative flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md" style={{ background: `linear-gradient(135deg, ${workout.accent}, ${workout.accentDark})` }}>
+            <Icon name="sparkles" className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1 min-w-0 pt-0.5">
+            <p className="text-sm sm:text-base font-bold leading-relaxed text-slate-800 mb-2">"{quote.text}"</p>
+            {quote.author && <p className="text-[11px] font-bold tracking-wide" style={{ color: workout.accentDark }}>— {quote.author}</p>}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatsGrid({ workout, doneCount, totalItems }) {
+  return (
+    <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
+      <StatBox iconName="timer" label="المدة" value={workout.duration} accent={workout.accent} />
+      <StatBox iconName="target" label="التمارين" value={`${workout.exercises.length}${workout.cardio ? " + 1" : ""}`} accent={workout.accent} />
+      <StatBox iconName="trophy" label="مكتمل" value={`${doneCount}/${totalItems}`} accent={workout.accent} />
+    </div>
+  );
+}
+
+function StatBox({ iconName, label, value, accent }) {
+  return (
+    <div className="bg-white/80 backdrop-blur-md border border-white/60 rounded-xl p-3 shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-white transition-all">
+      <div className="flex items-center gap-1 text-[9px] sm:text-[10px] mb-1.5 tracking-widest uppercase font-bold" style={{ color: accent }}>
+        <Icon name={iconName} className="w-3.5 h-3.5" /><span>{label}</span>
+      </div>
+      <div className="text-slate-900 font-black text-xs sm:text-sm leading-tight">{value}</div>
+    </div>
+  );
+}
+
+function ProgressSection({ doneCount, totalExercises, progress, allDone, onReset, workout }) {
+  return (
+    <section className="mb-5">
+      <div className="bg-white/80 backdrop-blur-md border border-white/60 rounded-2xl p-4 sm:p-5 shadow-md">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-md hover-wiggle cursor-default" style={{ background: `linear-gradient(135deg, ${workout.accent} 0%, ${workout.accentDark} 100%)` }}>
+              <Icon name="trophy" className="w-4 h-4 text-white" />
+            </div>
+            <h3 className="text-sm sm:text-base font-black text-slate-900">إنجاز اليوم</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="text-2xl font-black tabular-nums leading-none">
+              <span style={{ color: workout.accent }}>{doneCount}</span>
+              <span className="text-slate-300 text-base">/{totalExercises}</span>
+            </div>
+            <button onClick={onReset} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 hover:rotate-180 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all duration-300">
+              <Icon name="rotate-ccw" className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {Array.from({ length: totalExercises }).map((_, i) => {
+            const filled = i < doneCount;
+            return <div key={i} className="flex-1 h-2.5 rounded-full transition-all duration-700" style={filled ? { background: `linear-gradient(90deg, ${workout.accent}, ${workout.accentDark})`, boxShadow: `0 0 12px ${workout.glow}` } : { background: "rgb(241 245 249)" }} />;
+          })}
+        </div>
+        <div className="flex items-center justify-between mt-2.5 text-[10px] text-slate-500 font-bold">
+          <span>{Math.round(progress)}% مُنجَز</span>
+          <span>{totalExercises - doneCount} متبقي</span>
+        </div>
+        {allDone && (
+          <div className="mt-4 p-4 rounded-xl text-center relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${workout.accentSoft} 0%, ${workout.accentLight} 100%)`, border: `1px solid ${workout.accent}50` }}>
+            <div className="text-3xl mb-1.5 inline-block" style={{ animation: "wiggle 1s ease-in-out infinite" }}>🔥</div>
+            <p className="font-black text-sm sm:text-base" style={{ color: workout.accentDark }}>أنهيت تمرين اليوم يا بطل</p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function SectionTitle({ iconName, text, accent }) {
+  return (
+    <div className="flex items-center gap-3 mb-3.5">
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur border shadow-sm" style={{ borderColor: `${accent}40`, color: accent }}>
+        <Icon name={iconName} className="w-3.5 h-3.5" />
+        <span className="text-[11px] font-black tracking-wider">{text}</span>
+      </div>
+      <div className="h-px flex-1 bg-gradient-to-l from-transparent via-slate-300 to-transparent" />
+    </div>
+  );
+}
+
+function ExercisesList({ exercises, completed, onToggle, workout }) {
+  return (
+    <section className="mb-5">
+      <SectionTitle iconName="dumbbell" text="تمارين اليوم" accent={workout.accent} />
+      <div className="grid gap-3">
+        {exercises.map((ex, idx) => (
+          <ExerciseCard key={ex.id} exercise={ex} index={idx + 1} done={!!completed[ex.id]} onToggle={() => onToggle(ex.id)} workout={workout} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ExerciseCard({ exercise, index, done, onToggle, workout }) {
+  return (
+    <article className="relative border rounded-2xl overflow-hidden transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5"
+      style={{ borderColor: done ? `${workout.accent}50` : "rgb(226 232 240)", background: done ? `linear-gradient(135deg, ${workout.accentSoft} 0%, white 100%)` : "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(8px)" }}>
+      <div className="absolute right-0 top-0 bottom-0 w-1" style={{ background: `linear-gradient(to bottom, ${workout.accent}, ${workout.accentDark})`, opacity: done ? 1 : 0.4 }} />
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start gap-3 mb-3.5">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0 transition-all duration-300"
+            style={done ? { background: `linear-gradient(135deg, ${workout.accent}, ${workout.accentDark})`, color: "white", boxShadow: `0 6px 18px -6px ${workout.glow}`, transform: "rotate(-5deg)" } : { background: "rgb(241 245 249)", color: "rgb(100 116 139)" }}>
+            {done ? <Icon name="check-circle-2" className="w-5 h-5" /> : <span>{index}</span>}
+          </div>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <h4 className={`text-sm sm:text-base font-black mb-0.5 leading-tight ${done ? "line-through opacity-60" : "text-slate-900"}`} style={done ? { color: workout.accentDark } : {}}>{exercise.name}</h4>
+            <div className="text-[10px] sm:text-[11px] text-slate-500 font-mono tracking-tight">{exercise.machine}</div>
+          </div>
+        </div>
+        <div className="flex items-stretch mb-3 bg-slate-50/80 border border-slate-200/60 rounded-xl overflow-hidden">
+          <InfoCell label="جولات" value={exercise.sets} />
+          <InfoCell label="تكرار" value={exercise.reps} divider />
+          <InfoCell label="المجموع" value={(() => { const r = exercise.reps.split("–")[0]; return parseInt(r) * exercise.sets || "—"; })()} accent={workout.accent} divider />
+        </div>
+        {exercise.notes && (
+          <div className="mb-3 px-3 py-2 rounded-lg bg-slate-50/80 border-r-2 text-[11px] sm:text-xs text-slate-600 leading-relaxed" style={{ borderRightColor: workout.accent }}>
+            <span className="font-black ml-1" style={{ color: workout.accent }}>ملاحظة:</span>{exercise.notes}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <button onClick={onToggle} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95"
+            style={done ? { background: workout.accentLight, color: workout.accentDark, border: `1px solid ${workout.accent}40` } : { background: `linear-gradient(135deg, ${workout.accent}, ${workout.accentDark})`, color: "white", boxShadow: `0 6px 16px -6px ${workout.glow}` }}>
+            {done ? (<><Icon name="check-circle-2" className="w-4 h-4" /> مُنجَز</>) : (<><Icon name="circle" className="w-4 h-4" /> تم</>)}
+          </button>
+          <a href={exercise.video} target="_blank" rel="noopener noreferrer" className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-black text-xs sm:text-sm bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 transition-all hover:scale-[1.02] active:scale-95">
+            <Icon name="play-circle" className="w-4 h-4" />شرح
+          </a>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function InfoCell({ label, value, accent, divider }) {
+  return (
+    <div className={`flex-1 px-2 py-2 text-center ${divider ? "border-r border-slate-200" : ""}`}>
+      <div className="text-[8px] sm:text-[9px] text-slate-500 tracking-widest uppercase font-bold mb-0.5">{label}</div>
+      <div className="font-black text-sm sm:text-base" style={accent ? { color: accent } : { color: "rgb(15 23 42)" }}>{value}</div>
+    </div>
+  );
+}
+
+function CardioCard({ cardio, done, onToggle, workout }) {
+  return (
+    <section className="mb-5">
+      <SectionTitle iconName="footprints" text="الكارديو" accent="#fb7185" />
+      <article className="relative border rounded-2xl overflow-hidden transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+        style={{ borderColor: done ? "rgba(251, 113, 133, 0.4)" : "rgb(226 232 240)", background: done ? "linear-gradient(135deg, #fff1f2 0%, white 100%)" : "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(8px)" }}>
+        <div className="relative p-4 sm:p-5 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 hover-wiggle" style={{ background: "linear-gradient(135deg, #fb7185, #e11d48)", boxShadow: "0 6px 18px -6px rgba(251, 113, 133, 0.5)" }}>
+            <Icon name={cardio.icon} className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className={`text-sm sm:text-base font-black mb-0.5 ${done ? "text-rose-500 line-through" : "text-slate-900"}`}>{cardio.type}</h4>
+            <div className="flex items-center gap-1 text-[11px] text-slate-500 font-mono">
+              <Icon name="clock" className="w-3 h-3" /><span>{cardio.duration}</span>
+            </div>
+          </div>
+          <button onClick={onToggle} className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-95"
+            style={done ? { background: "#ffe4e6", color: "#be123c", border: "1px solid rgba(251, 113, 133, 0.4)" } : { background: "linear-gradient(135deg, #fb7185, #e11d48)", color: "white", boxShadow: "0 6px 16px -6px rgba(251, 113, 133, 0.5)" }}>
+            {done ? (<><Icon name="check-circle-2" className="w-4 h-4" /> مُنجَز</>) : (<><Icon name="circle" className="w-4 h-4" /> تم</>)}
+          </button>
+        </div>
+      </article>
+    </section>
+  );
+}
+
+function TipsSection() {
+  return (
+    <section className="mb-5">
+      <SectionTitle iconName="sparkles" text="أهم التعليمات" accent="#f59e0b" />
+      <div className="grid grid-cols-2 gap-2.5">
+        {TIPS.map((tip, i) => (
+          <div key={i} className="bg-white/85 backdrop-blur-md border border-white/60 rounded-xl p-3 shadow-md hover:shadow-lg hover:-translate-y-1 hover:bg-white transition-all duration-300 cursor-default">
+            <div className="text-xl mb-1.5 inline-block transition-transform hover:scale-110">{tip.icon}</div>
+            <div className="text-[9px] sm:text-[10px] text-slate-500 tracking-widest uppercase font-bold mb-0.5">{tip.title}</div>
+            <p className="text-xs text-slate-800 font-bold leading-tight">{tip.text}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WaterSection({ water, progress, done, onAdd, onReset }) {
+  const cups = Array.from({ length: WATER_GOAL });
+  const [splashId, setSplashId] = useState(0);
+  const handleAdd = () => { setSplashId((s) => s + 1); onAdd(); };
+  return (
+    <section className="mb-5">
+      <SectionTitle iconName="droplet" text="شرب الماء" accent="#06b6d4" />
+      <div className="bg-white/85 backdrop-blur-md border border-white/60 rounded-2xl p-4 sm:p-5 shadow-md">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center hover-wiggle" style={{ boxShadow: "0 6px 18px -6px rgba(6, 182, 212, 0.5)" }}>
+              <Icon name="droplet" className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900">هدف الماء</h3>
+              <p className="text-[10px] text-slate-500">{WATER_GOAL} أكواب يومياً</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="text-2xl font-black tabular-nums leading-none">
+              <span className="text-cyan-500">{water}</span>
+              <span className="text-slate-300 text-base">/{WATER_GOAL}</span>
+            </div>
+            <button onClick={onReset} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 hover:rotate-180 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-all duration-300">
+              <Icon name="rotate-ccw" className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        <div className="flex items-stretch gap-1.5 mb-4">
+          {cups.map((_, i) => {
+            const filled = i < water;
+            const isLatest = i === water - 1 && splashId > 0;
+            return (
+              <div key={i} className={`flex-1 h-12 rounded-lg border-2 transition-all relative overflow-hidden ${filled ? "border-cyan-400" : "bg-slate-50 border-slate-200"} ${isLatest ? "scale-110" : ""}`}
+                style={filled ? { background: "linear-gradient(to top, #06b6d4, #67e8f9)", boxShadow: "0 0 12px rgba(6, 182, 212, 0.5)", transition: "all 0.4s ease" } : {}}>
+                {filled && (<>
+                  <Icon name="droplet" className="absolute inset-0 m-auto w-3.5 h-3.5 text-white" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }} />
+                  <div className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-white/70" />
+                </>)}
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={handleAdd} className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-black text-sm bg-gradient-to-r from-cyan-400 to-blue-500 text-white transition-all hover:scale-[1.01] active:scale-95" style={{ boxShadow: "0 10px 24px -8px rgba(6, 182, 212, 0.6)" }}>
+          <Icon name="droplet" className="w-4 h-4" />شربت كوب ماء
+        </button>
+        {done && (
+          <div className="mt-3 p-3 rounded-xl bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-300 text-center">
+            <p className="font-black text-cyan-700 text-sm">💧 كملت هدف الماء اليوم</p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function WeekPage({ schedule, todayDayNum, goToDay, onEditClick }) {
+  return (
+    <section className="mb-8">
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-white/60 text-slate-500 text-[10px] font-bold mb-3 shadow-sm">
+          <Icon name="calendar" className="w-3 h-3" />البرنامج الأسبوعي
+        </div>
+        <h2 className="text-2xl sm:text-4xl font-black mb-1.5 tracking-tight text-slate-900">جدول الأسبوع</h2>
+        <p className="text-slate-500 text-xs">اضغط على أي يوم لاستعراض تمارينه</p>
+      </div>
+      <button onClick={onEditClick} className="w-full mb-4 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl font-black text-sm bg-slate-900 hover:bg-slate-800 text-white transition shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-95">
+        <Icon name="settings" className="w-4 h-4" />تعديل الجدول
+      </button>
+      <div className="grid gap-2.5">
+        {[0,1,2,3,4,5,6].map((dayNum) => {
+          const wKey = schedule[dayNum]; const isToday = dayNum === todayDayNum;
+          const isRest = wKey === "rest"; const w = WORKOUT_PLAN[wKey];
+          return (
+            <button key={dayNum} onClick={() => goToDay(dayNum)} disabled={isRest}
+              className="relative group bg-white/85 backdrop-blur-md border rounded-2xl p-3.5 sm:p-4 transition-all text-right overflow-hidden disabled:cursor-default shadow-md hover:shadow-xl hover:-translate-y-0.5 enabled:hover:bg-white"
+              style={{ borderColor: isToday ? w.accent : "rgb(226 232 240)", ...(isToday ? { boxShadow: `0 0 0 1px ${w.accent}50, 0 8px 20px -6px ${w.glow}` } : {}) }}>
+              {!isRest && <div className="absolute right-0 top-0 bottom-0 w-1" style={{ background: `linear-gradient(to bottom, ${w.accent}, ${w.accentDark})` }} />}
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 transition-transform group-hover:scale-110 group-hover:rotate-6"
+                  style={{ background: `linear-gradient(135deg, ${w.accent}, ${w.accentDark})`, boxShadow: `0 6px 18px -6px ${w.glow}` }}>{w.icon}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <h3 className="text-sm sm:text-base font-black text-slate-900">{DAY_NAMES[dayNum]}</h3>
+                    {isToday && (<span className="text-[9px] font-black px-2 py-0.5 rounded-full text-white flex items-center gap-1" style={{ background: w.accent }}>
+                      <span className="w-1 h-1 rounded-full bg-white animate-pulse" />اليوم</span>)}
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <p className={`text-xs font-bold ${isRest ? "text-slate-400" : "text-slate-600"}`}>{w.name}</p>
+                    {!isRest && (<><span className="text-slate-300">•</span><span className="text-[10px] text-slate-500 font-mono">{w.code}</span></>)}
+                  </div>
+                </div>
+                {!isRest && <Icon name="chevron-left" className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:-translate-x-1 transition-all" />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function SettingsPage({ schedule, updateDay, swapDays, resetSchedule, onBack }) {
+  const [swapMode, setSwapMode] = useState(false);
+  const [swapFirst, setSwapFirst] = useState(null);
+  const handleSwapClick = (dayNum) => {
+    if (swapFirst === null) setSwapFirst(dayNum);
+    else if (swapFirst === dayNum) setSwapFirst(null);
+    else { swapDays(swapFirst, dayNum); setSwapFirst(null); }
+  };
+  return (
+    <section className="mb-8">
+      <button onClick={onBack} className="mb-4 inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 hover:-translate-x-1 transition-all">
+        <Icon name="chevron-left" className="w-4 h-4" style={{ transform: "rotate(180deg)" }} />رجوع
+      </button>
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-white/60 text-slate-500 text-[10px] font-bold mb-3 shadow-sm">
+          <Icon name="settings" className="w-3 h-3" />إعدادات الجدول
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-black mb-1.5 tracking-tight text-slate-900">تعديل الأسبوع</h2>
+        <p className="text-slate-500 text-xs">غيّر نوع تمرين أي يوم أو بدّل بين يومين</p>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5 mb-5">
+        <button onClick={() => { setSwapMode(!swapMode); setSwapFirst(null); }}
+          className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-black text-xs sm:text-sm transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95"
+          style={swapMode ? { background: "linear-gradient(135deg, #fb923c, #ea580c)", color: "white", boxShadow: "0 6px 18px -6px rgba(251, 146, 60, 0.5)" } : { background: "white", color: "rgb(15 23 42)", border: "1px solid rgb(226 232 240)" }}>
+          <Icon name="arrow-left-right" className="w-4 h-4" />{swapMode ? "إلغاء التبديل" : "تبديل بين يومين"}
+        </button>
+        <button onClick={() => { if (confirm("هل تريد إعادة الجدول للوضع الافتراضي؟")) { resetSchedule(); setSwapMode(false); setSwapFirst(null); } }}
+          className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-black text-xs sm:text-sm bg-white hover:bg-slate-50 border border-slate-200 text-slate-900 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95">
+          <Icon name="rotate-ccw" className="w-4 h-4" />الافتراضي
+        </button>
+      </div>
+      {swapMode && (
+        <div className="mb-4 p-3 rounded-xl bg-orange-100/80 backdrop-blur border border-orange-300 text-center">
+          <p className="text-orange-700 text-xs font-bold">{swapFirst === null ? "اختر اليوم الأول للتبديل" : `تم اختيار ${DAY_NAMES[swapFirst]} — اختر اليوم الثاني`}</p>
+        </div>
+      )}
+      <div className="grid gap-2.5">
+        {[0,1,2,3,4,5,6].map((dayNum) => {
+          const wKey = schedule[dayNum]; const w = WORKOUT_PLAN[wKey];
+          const isFirstSwap = swapFirst === dayNum;
+          return <DayEditCard key={dayNum} dayNum={dayNum} workout={w} currentKey={wKey} swapMode={swapMode} isFirstSwap={isFirstSwap} onSwapClick={() => handleSwapClick(dayNum)} onChangeWorkout={(k) => updateDay(dayNum, k)} />;
+        })}
+      </div>
+    </section>
+  );
+}
+
+function DayEditCard({ dayNum, workout, currentKey, swapMode, isFirstSwap, onSwapClick, onChangeWorkout }) {
+  const [showOptions, setShowOptions] = useState(false);
+  if (swapMode) return (
+    <button onClick={onSwapClick} className="relative bg-white/85 backdrop-blur border rounded-2xl p-3.5 transition-all text-right overflow-hidden shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-95"
+      style={{ borderColor: isFirstSwap ? "#fb923c" : "rgb(226 232 240)", background: isFirstSwap ? "#fff7ed" : "rgba(255, 255, 255, 0.85)" }}>
+      <div className="absolute right-0 top-0 bottom-0 w-1" style={{ background: isFirstSwap ? "#fb923c" : `linear-gradient(to bottom, ${workout.accent}, ${workout.accentDark})` }} />
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: `linear-gradient(135deg, ${workout.accent}, ${workout.accentDark})` }}>{workout.icon}</div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-black mb-0.5 text-slate-900">{DAY_NAMES[dayNum]}</h3>
+          <p className="text-xs font-bold text-slate-500">{workout.name}</p>
+        </div>
+        {isFirstSwap ? (
+          <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center shadow-md"><Icon name="check" className="w-4 h-4 text-white" /></div>
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center"><Icon name="arrow-left-right" className="w-3.5 h-3.5 text-slate-500" /></div>
+        )}
+      </div>
+    </button>
+  );
+  return (
+    <div className="relative bg-white/85 backdrop-blur border border-slate-200 rounded-2xl overflow-hidden shadow-md">
+      <div className="absolute right-0 top-0 bottom-0 w-1" style={{ background: `linear-gradient(to bottom, ${workout.accent}, ${workout.accentDark})` }} />
+      <button onClick={() => setShowOptions(!showOptions)} className="w-full p-3.5 text-right hover:bg-slate-50 transition">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ background: `linear-gradient(135deg, ${workout.accent}, ${workout.accentDark})` }}>{workout.icon}</div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-black mb-0.5 text-slate-900">{DAY_NAMES[dayNum]}</h3>
+            <p className="text-xs font-bold text-slate-500">{workout.name}</p>
+          </div>
+          <div className="text-[10px] text-slate-500 font-bold">{showOptions ? "إخفاء" : "تغيير"}</div>
+        </div>
+      </button>
+      {showOptions && (
+        <div className="px-3.5 pb-3.5 grid grid-cols-5 gap-1.5 border-t border-slate-200 pt-3 mt-1">
+          {ALL_WORKOUT_KEYS.map((key) => {
+            const opt = WORKOUT_PLAN[key]; const selected = currentKey === key;
+            return (
+              <button key={key} onClick={() => { onChangeWorkout(key); setShowOptions(false); }}
+                className="flex flex-col items-center gap-1 p-2 rounded-lg transition-all hover:scale-[1.05] active:scale-95"
+                style={selected ? { background: `linear-gradient(135deg, ${opt.accent}, ${opt.accentDark})`, color: "white", boxShadow: `0 4px 12px -4px ${opt.glow}` } : { background: "rgb(241 245 249)", color: "rgb(71 85 105)" }}>
+                <span className="text-base">{opt.icon}</span>
+                <span className="text-[9px] font-black tracking-wider">{opt.code}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="text-center mt-10 pb-4">
+      <p className="text-[10px] text-slate-400 tracking-widest uppercase font-bold">تمرين اليوم · Stay Strong 🌅</p>
+    </footer>
+  );
+}
+
+function MobileNav({ page, setPage, accent }) {
+  return (
+    <nav className="sm:hidden fixed bottom-3 left-3 right-3 z-50">
+      <div className="bg-white/90 backdrop-blur-2xl border border-white/60 rounded-2xl p-1.5 flex items-center gap-1.5 shadow-2xl">
+        <MobileNavBtn active={page === "home"} onClick={() => setPage("home")} label="الرئيسية" accent={accent} />
+        <MobileNavBtn active={page === "week" || page === "settings"} onClick={() => setPage("week")} label="الجدول" accent={accent} />
+      </div>
+    </nav>
+  );
+}
+
+function MobileNavBtn({ active, onClick, label, accent }) {
+  return (
+    <button onClick={onClick} className={`flex-1 flex items-center justify-center py-3 rounded-xl text-sm font-black transition-all ${active ? "text-white scale-[1.02]" : "text-slate-500"}`}
+      style={active ? { background: accent, boxShadow: `0 6px 18px -6px ${accent}` } : {}}>{label}</button>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
